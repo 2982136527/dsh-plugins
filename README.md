@@ -1,7 +1,8 @@
 # dsh-plugins
 
-DeepSeek Harness (dsh) 自研插件合集（monorepo）。所有插件为独立的 npm 包，
-可通过 Git 子目录直接安装。
+DeepSeek Harness (dsh) 自研插件合集（monorepo）。每个插件是独立的 npm 包，
+放在仓库子目录中，克隆后通过 `file:` 安装（pnpm/npm 不支持从 Git 仓库
+子目录直接安装，实测确认）。
 
 ## 插件列表
 
@@ -12,17 +13,16 @@ DeepSeek Harness (dsh) 自研插件合集（monorepo）。所有插件为独立�
 
 ## 安装（对方机器）
 
-**dsh-search**（bundle 型，一条命令）：
-
 ```bash
-dsh plugin --profile web add "git+https://github.com/2982136527/dsh-plugins.git#subdir=dsh-search"
-```
+# 1. 克隆仓库
+git clone https://github.com/2982136527/dsh-plugins.git
 
-**dsh-mobile**：
+# 2. 安装 dsh-search（bundle 型，一条命令，自动入列）
+dsh plugin --profile web add file:/绝对路径/dsh-plugins/dsh-search
 
-```bash
+# 3. 安装 dsh-mobile（客户端插件）
 cd ~/.dsh/profiles/web
-pnpm add "git+https://github.com/2982136527/dsh-plugins.git#subdir=dsh-mobile"
+pnpm add file:/绝对路径/dsh-plugins/dsh-mobile
 ```
 
 然后在 `~/.dsh/profiles/web/cordis.patch.yml` 末尾加入：
@@ -34,13 +34,13 @@ pnpm add "git+https://github.com/2982136527/dsh-plugins.git#subdir=dsh-mobile"
 ```
 
 - dsh-search 重启 `dsh web` 生效；dsh-mobile 刷新页面即生效。
-- 详细说明见各插件 README 和 `INSTALL.md`。
+- 更新插件：`git pull` 后重新 `pnpm add file:...`（或直接再跑一次安装命令）。
 
 ## 本地开发
 
 ```bash
-cd dsh-plugins
-pnpm install          # workspace 链接
 cd ~/.dsh/profiles/web
 pnpm add link:/路径/to/dsh-plugins/dsh-mobile
 ```
+
+`link:` 方式与开发目录保持实时同步（当前机器就是这样装的）。
