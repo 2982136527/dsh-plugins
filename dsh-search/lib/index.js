@@ -239,27 +239,28 @@ export function apply(ctx, config = {}) {
       query: { type: 'string', required: true, description: 'The search query.' },
     }),
     output: {
-      schema: compileValue({
+      schema: {
         type: 'object',
         additionalProperties: false,
         properties: {
           sources: {
             type: 'array',
-            required: true,
             items: {
               type: 'object',
               additionalProperties: false,
               properties: {
-                url: { type: 'string', required: true },
+                url: { type: 'string' },
                 title: { type: 'string' },
                 snippet: { type: 'string' },
                 publishedAt: { type: 'string' },
               },
+              required: ['url'],
             },
           },
-          truncated: { type: 'boolean', required: true },
+          truncated: { type: 'boolean' },
         },
-      }),
+        required: ['sources', 'truncated'],
+      },
       render: (_args, value) => [{ type: 'text', text: formatSources(value) }],
     },
     timeoutMs,

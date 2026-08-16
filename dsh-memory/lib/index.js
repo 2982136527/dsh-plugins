@@ -138,21 +138,27 @@ export function apply(ctx, config = {}) {
       '保存一条本地记忆（用户提供的用户名/密码/凭据、偏好、重要事实等）。'
       + '数据只写入本机 $DSH_HOME/memory/memory.json，不会上传到任何地方。'
       + '相同内容再次保存仅更新时间戳。',
-    parameters: compilePropertyMap({
-      content: { type: 'string', required: true, description: '要记住的内容，例如「用户的 GitHub 用户名是 xxx」' },
-      kind: { type: 'string', description: '类别：credential（凭据/密码）/ preference（偏好）/ fact（事实）/ other，默认 other' },
-      tags: { type: 'array', items: { type: 'string' }, description: '检索关键词，例如 ["github", "username"]' },
-    }),
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        content: { type: 'string', description: '要记住的内容，例如「用户的 GitHub 用户名是 xxx」' },
+        kind: { type: 'string', description: '类别：credential（凭据/密码）/ preference（偏好）/ fact（事实）/ other，默认 other' },
+        tags: { type: 'array', items: { type: 'string' }, description: '检索关键词，例如 ["github", "username"]' },
+      },
+      required: ['content'],
+    },
     output: {
-      schema: compileValue({
+      schema: {
         type: 'object',
         additionalProperties: false,
         properties: {
-          id: { type: 'string', required: true },
-          saved: { type: 'boolean', required: true },
-          total: { type: 'number', required: true },
+          id: { type: 'string' },
+          saved: { type: 'boolean' },
+          total: { type: 'number' },
         },
-      }),
+        required: ['id', 'saved', 'total'],
+      },
       render: (_args, value) => [{ type: 'text', text: `已保存记忆条目 ${value.id}（共 ${value.total} 条）` }],
     },
     timeoutMs: TIMEOUT_MS,
@@ -190,33 +196,39 @@ export function apply(ctx, config = {}) {
     description:
       '回忆本地保存的记忆（凭据、偏好、事实等）。按关键词匹配内容与标签，'
       + '返回相关条目。数据只从本机 $DSH_HOME/memory/memory.json 读取。',
-    parameters: compilePropertyMap({
-      query: { type: 'string', required: true, description: '检索关键词，例如 "github 用户名" 或 "代码风格偏好"' },
-      kind: { type: 'string', description: '只返回该类别（credential/preference/fact/other）' },
-      limit: { type: 'number', description: '最多返回条数，默认 5，最大 20' },
-    }),
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        query: { type: 'string', description: '检索关键词，例如 "github 用户名" 或 "代码风格偏好"' },
+        kind: { type: 'string', description: '只返回该类别（credential/preference/fact/other）' },
+        limit: { type: 'number', description: '最多返回条数，默认 5，最大 20' },
+      },
+      required: ['query'],
+    },
     output: {
-      schema: compileValue({
+      schema: {
         type: 'object',
         additionalProperties: false,
         properties: {
           entries: {
             type: 'array',
-            required: true,
             items: {
               type: 'object',
               additionalProperties: false,
               properties: {
-                id: { type: 'string', required: true },
-                content: { type: 'string', required: true },
-                kind: { type: 'string', required: true },
-                tags: { type: 'array', items: { type: 'string' }, required: true },
-                updatedAt: { type: 'string', required: true },
+                id: { type: 'string' },
+                content: { type: 'string' },
+                kind: { type: 'string' },
+                tags: { type: 'array', items: { type: 'string' } },
+                updatedAt: { type: 'string' },
               },
+              required: ['id', 'content', 'kind', 'tags', 'updatedAt'],
             },
           },
         },
-      }),
+        required: ['entries'],
+      },
       render: (_args, value) => value.entries.length === 0
         ? [{ type: 'text', text: '没有找到匹配的记忆。' }]
         : [{ type: 'text', text: value.entries.map(entry =>
@@ -259,19 +271,24 @@ export function apply(ctx, config = {}) {
     name: 'memory_forget',
     description:
       '删除一条本地记忆（按条目 id 或精确内容）。用于清理保存错误或不再需要的信息。',
-    parameters: compilePropertyMap({
-      id: { type: 'string', description: '要删除的条目 id（memory_recall 返回的 id）' },
-      content: { type: 'string', description: '要删除的条目精确内容' },
-    }),
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        id: { type: 'string', description: '要删除的条目 id（memory_recall 返回的 id）' },
+        content: { type: 'string', description: '要删除的条目精确内容' },
+      },
+    },
     output: {
-      schema: compileValue({
+      schema: {
         type: 'object',
         additionalProperties: false,
         properties: {
-          removed: { type: 'number', required: true },
-          total: { type: 'number', required: true },
+          removed: { type: 'number' },
+          total: { type: 'number' },
         },
-      }),
+        required: ['removed', 'total'],
+      },
       render: (_args, value) => [{ type: 'text', text: `已删除 ${value.removed} 条记忆（剩余 ${value.total} 条）` }],
     },
     timeoutMs: TIMEOUT_MS,
