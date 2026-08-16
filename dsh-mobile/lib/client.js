@@ -201,6 +201,41 @@ window.__ModuleLoader__.load({
       cells[cells.length - 1].after(row);
     }
 
+/**
+     * The permission menu anchors to the hidden in-composer trigger (zero
+     * size), which opens it at the tools cluster — the model dropdown the
+     * user clicked lives at the model button. While the permission menu is
+     * open, pin its anchor wrapper to the model button's box so the menu
+     * opens in the same place as the model / effort lists.
+     */
+    function repositionPermissionMenu() {
+      if (mq === null || !mq.matches) return;
+      var trigger = permissionTrigger();
+      if (trigger === null) return;
+      var wrapper = trigger.parentElement;
+      if (wrapper === null) return;
+      var open = wrapper.querySelector('[role="menu"]') !== null
+        || trigger.parentElement.parentElement?.querySelector('[role="menu"]') !== null;
+      var modelBtn = document.querySelector('button[aria-haspopup="menu"][aria-label*="模型"], button[aria-haspopup="menu"][aria-label*="model" i]');
+      if (open && modelBtn !== null) {
+        var rect = modelBtn.getBoundingClientRect();
+        wrapper.style.position = 'fixed';
+        wrapper.style.left = rect.left + 'px';
+        wrapper.style.top = rect.top + 'px';
+        wrapper.style.width = '0px';
+        wrapper.style.height = '0px';
+        wrapper.style.zIndex = '100';
+      } else if (wrapper.style.position === 'fixed') {
+        wrapper.style.position = '';
+        wrapper.style.left = '';
+        wrapper.style.top = '';
+        wrapper.style.width = '';
+        wrapper.style.height = '';
+        wrapper.style.zIndex = '';
+      }
+    }
+
+
     var menuWatcher = null;
     function ensureMenuWatcher() {
       if (menuWatcher !== null) return;
@@ -212,6 +247,7 @@ window.__ModuleLoader__.load({
         requestAnimationFrame(function () {
           pending = false;
           relocateToolsButtons();
+          repositionPermissionMenu();
           var menus = document.querySelectorAll('[role="menu"]');
           for (var i = 0; i < menus.length; i++) {
             var menu = menus[i];
@@ -268,7 +304,9 @@ window.__ModuleLoader__.load({
       if (trailing === null) return;
       var tools = composerCluster('tools');
       if (tools === null) return;
-      var buttons = tools.querySelectorAll('button');
+      // Never touch menu items: the permission menu hangs off the tools
+      // cluster, and its option buttons must not be relocated as tools.
+      var buttons = tools.querySelectorAll('button:not([role="menuitem"]):not([role="menuitemradio"])');
       // Pick out the visible tools: commands and attach (never the hidden
       // access-mode trigger). Their localized aria-labels match; anything
       // else that is not the access trigger also moves.
