@@ -1,0 +1,28 @@
+{
+  "name": "dsh-memory",
+  "version": "0.1.0",
+  "description": "Local memory for dsh agents: model-callable save/recall of credentials, preferences and facts. Data stays on this machine under $DSH_HOME/memory — never uploaded.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "cordis",
+    "plugin",
+    "memory",
+    "local",
+    "privacy"
+  ]
+}
