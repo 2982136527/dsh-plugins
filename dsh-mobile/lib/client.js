@@ -29,6 +29,35 @@ window.__ModuleLoader__.load({
     var module = { exports: {} };
     var exports = module.exports;
 
+    // Browsers gate crypto.randomUUID behind secure contexts (https or
+    // localhost). Served over plain HTTP on a LAN IP the app's request ids
+    // would fail with "crypto.randomUUID is not a function". Polyfill it
+    // with UUID v4 from crypto.getRandomValues (always available) as early
+    // as this bundle materializes.
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID !== 'function') {
+      if (typeof crypto.getRandomValues === 'function') {
+        crypto.randomUUID = function () {
+          var bytes = crypto.getRandomValues(new Uint8Array(16));
+          bytes[6] = (bytes[6] & 0x0f) | 0x40;
+          bytes[8] = (bytes[8] & 0x3f) | 0x80;
+          var hex = '';
+          for (var i = 0; i < 16; i++) {
+            hex += bytes[i].toString(16).padStart(2, '0');
+          }
+          return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+        };
+      } else {
+        crypto.randomUUID = function () {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (ch) {
+            var r = Math.random() * 16 | 0;
+            var v = ch === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          });
+        };
+      }
+    }
+
+
     var MOBILE_QUERY = '(max-width: 720px)';
     var FRAME_SELECTOR = 'div[style*="grid-template-columns"]';
     var PLUGIN_ID = 'dsh-mobile';
